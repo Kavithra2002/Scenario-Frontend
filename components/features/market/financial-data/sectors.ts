@@ -1,0 +1,78 @@
+// Default sector list for Financial Data
+// This will be replaced with backend data when available
+
+export const defaultFinancialSectors = [
+  {
+    id: "financial",
+    name: "Financial",
+    noOfCompanies: 0,
+    contributionToASPI: 0,
+    totalMarketCap: 0,
+    avgDividendYield: 0,
+    lastUpdated: "",
+  },
+  {
+    id: "hotels-and-resort",
+    name: "Hotels and Resort",
+    noOfCompanies: 0,
+    contributionToASPI: 0,
+    totalMarketCap: 0,
+    avgDividendYield: 0,
+    lastUpdated: "",
+  },
+  {
+    id: "industrial",
+    name: "Industrial",
+    noOfCompanies: 0,
+    contributionToASPI: 0,
+    totalMarketCap: 0,
+    avgDividendYield: 0,
+    lastUpdated: "",
+  },
+  {
+    id: "energy",
+    name: "Energy",
+    noOfCompanies: 0,
+    contributionToASPI: 0,
+    totalMarketCap: 0,
+    avgDividendYield: 0,
+    lastUpdated: "",
+  },
+  {
+    id: "transportation-logistics",
+    name: "Transportation & Logistics",
+    noOfCompanies: 0,
+    contributionToASPI: 0,
+    totalMarketCap: 0,
+    avgDividendYield: 0,
+    lastUpdated: "",
+  },
+  {
+    id: "information-technology",
+    name: "Information Technology",
+    noOfCompanies: 0,
+    contributionToASPI: 0,
+    totalMarketCap: 0,
+    avgDividendYield: 0,
+    lastUpdated: "",
+  },
+  {
+    id: "consumer-goods",
+    name: "Consumer Goods",
+    noOfCompanies: 0,
+    contributionToASPI: 0,
+    totalMarketCap: 0,
+    avgDividendYield: 0,
+    lastUpdated: "",
+  },
+  {
+    id: "consumer-services",
+    name: "Consumer Services",
+    noOfCompanies: 0,
+    contributionToASPI: 0,
+    totalMarketCap: 0,
+    avgDividendYield: 0,
+    lastUpdated: "",
+  },
+];
+
