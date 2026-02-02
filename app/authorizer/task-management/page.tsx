@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search } from "lucide-react";
+import { apiUrl } from "@/lib/api";
 
 // Task data types - ready for backend integration
 export interface Task {
@@ -38,29 +39,11 @@ export default function AuthorizerTaskManagement() {
       try {
         setIsLoading(true);
         
-        // TODO: Replace with actual API endpoint when backend is ready
-        // Example:
-        // const response = await fetch('/api/authorizer/tasks');
-        // const data = await response.json();
-        // setTasks(data);
-        
-        // Expected data format:
-        // [
-        //   {
-        //     id: "T_001",
-        //     reportName: "Weekly Economic Report",
-        //     status: "Updating",
-        //     assignedTo: "John Doe",
-        //     dueDate: "2024-02-15",
-        //     createdAt: "2024-01-20",
-        //     updatedAt: "2024-02-01"
-        //   },
-        //   ...
-        // ]
-        
-        // For now, keep empty array until backend is ready
-        setTasks([]);
-        setFilteredTasks([]);
+        const response = await fetch(apiUrl("/api/authorizer/tasks"));
+        if (!response.ok) throw new Error("Failed to fetch tasks");
+        const data = await response.json();
+        setTasks(Array.isArray(data) ? data : []);
+        setFilteredTasks(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Error fetching tasks:', err);
       } finally {

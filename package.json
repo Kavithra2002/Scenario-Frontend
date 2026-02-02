@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev -p 3001\" \"wait-on http://localhost:3001 && open-cli http://localhost:3001/user\"",
-    "dev:no-open": "next dev -p 3001",
+    "dev": "concurrently -n next,open,backend \"next dev -p 3001\" \"wait-on http://localhost:3001 && open-cli http://localhost:3001/user\" \"node scripts/check-backend-health.js\"",
+    "dev:no-open": "concurrently -n next,backend \"next dev -p 3001\" \"node scripts/check-backend-health.js\"",
     "build": "next build",
     "start": "node scripts/start-server.js",
     "lint": "eslint"
