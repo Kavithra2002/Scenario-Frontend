@@ -100,7 +100,7 @@ export function AccountPage({ userType = "user" }: AccountPageProps) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-background">
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
           {/* Account Section */}

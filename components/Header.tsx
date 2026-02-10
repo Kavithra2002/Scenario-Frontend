@@ -11,10 +11,35 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+const ROLE_LABELS: Record<string, string> = {
+  user: "User",
+  admin: "Admin",
+  authorizer: "Authorizer",
+  "system-admin": "System Admin",
+  dashboard: "Dashboard",
+};
+
+const ROLE_HREFS: Record<string, string> = {
+  user: "/user",
+  admin: "/admin",
+  authorizer: "/authorizer",
+  "system-admin": "/system-admin",
+  dashboard: "/dashboard",
+};
+
+const ITEMS = [
+  { label: "User", href: "/user" },
+  { label: "Admin", href: "/admin" },
+  { label: "System Admin", href: "/system-admin" },
+  { label: "Authorizer", href: "/authorizer" },
+  { label: "Dashboard", href: "/dashboard" },
+];
+
 export default function Header() {
   const pathname = usePathname() ?? "";
 
   const currentUserType = (() => {
+    if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) return "Dashboard";
     if (pathname === "/admin" || pathname.startsWith("/admin/")) return "Admin";
     if (pathname === "/system-admin" || pathname.startsWith("/system-admin/"))
       return "System Admin";
@@ -26,6 +51,8 @@ export default function Header() {
 
   const currentInitials = (() => {
     switch (currentUserType) {
+      case "Dashboard":
+        return "DB";
       case "System Admin":
         return "SA";
       case "Authorizer":
@@ -38,38 +65,30 @@ export default function Header() {
     }
   })();
 
-  const items = [
-    { label: "User", href: "/user" },
-    { label: "Admin", href: "/admin" },
-    { label: "System Admin", href: "/system-admin" },
-    { label: "Authorizer", href: "/authorizer" },
-  ] as const;
-
   return (
-    <header className="w-full border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-black">
+    <header className="w-full border-b border-border bg-background">
       <div className="flex w-full items-center justify-between px-3 py-2">
         <div className="flex items-center">
-          <h1 className="text-lg font-semibold text-black dark:text-zinc-50">
-            AMBEON
-          </h1>
+          <Link href="/">
+            <h1 className="text-lg font-semibold text-foreground hover:opacity-80">
+              AMBEON
+            </h1>
+          </Link>
         </div>
         <div className="flex items-center gap-2 ml-auto pr-4">
-          <Badge
-            variant="secondary"
-            className="hidden sm:inline-flex select-none"
-          >
+          <Badge variant="secondary" className="hidden sm:inline-flex select-none">
             {currentUserType}
           </Badge>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 transition-colors">
-                <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300">
+              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors">
+                <span className="text-[10px] font-semibold text-muted-foreground">
                   {currentInitials}
                 </span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              {items.map((item) => (
+              {ITEMS.map((item) => (
                 <DropdownMenuItem key={item.href} asChild>
                   <Link
                     href={item.href}

@@ -34,6 +34,7 @@ export async function apiFetch<T = unknown>(
       "Content-Type": "application/json",
       ...options?.headers,
     },
+    credentials: "include",
   });
   if (!res.ok) {
     throw new Error(`API error ${res.status}: ${res.statusText}`);

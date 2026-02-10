@@ -48,7 +48,7 @@ export default function ScenarioAnalysis() {
           </Card>
 
           {/* Company Details Section */}
-          <Card className="p-6">
+          <Card className="p-6 bg-zinc-900/50 dark:bg-black border-zinc-800">
             <CompanyDetails data={scenarioData?.companyDetails} />
           </Card>
 
@@ -58,7 +58,7 @@ export default function ScenarioAnalysis() {
           </Card>
 
           {/* Scenario Output Section */}
-          <Card className="p-6">
+          <Card className="p-6 bg-zinc-900/50 dark:bg-black border-zinc-800">
             <ScenarioOutput data={scenarioData?.scenarioOutput} />
           </Card>
         </div>

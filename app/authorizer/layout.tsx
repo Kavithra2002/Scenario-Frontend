@@ -10,7 +10,7 @@ export default function AuthorizerLayout({
     <SidebarProvider>
       <AuthorizerMenu />
       <SidebarInset>
-        <div className="flex min-h-screen bg-zinc-50 font-sans dark:bg-black">
+        <div className="flex min-h-screen bg-background">
           <main className="flex-1">{children}</main>
         </div>
       </SidebarInset>

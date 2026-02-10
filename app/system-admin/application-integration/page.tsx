@@ -219,29 +219,29 @@ export default function SystemAdminApplicationIntegration() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
-        <p className="mt-4 text-zinc-600 dark:text-zinc-400">Loading configuration…</p>
+        <p className="mt-4 text-muted-foreground">Loading configuration…</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-background">
       <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl space-y-6">
           <div>
-            <h1 className="text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+            <h1 className="text-3xl font-semibold leading-10 tracking-tight text-foreground">
               Application Integration
             </h1>
-            <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 text-lg text-muted-foreground">
               Database, server, and other configuration. When the backend is ready, use the
               commented API endpoints to connect.
             </p>
           </div>
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200">
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
               {error}
             </div>
           )}
@@ -337,12 +337,12 @@ export default function SystemAdminApplicationIntegration() {
                       Test connection
                     </Button>
                     {dbTestStatus === "success" && (
-                      <span className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+                      <span className="flex items-center gap-1 text-sm text-green-600">
                         <CheckCircle2 className="h-4 w-4" /> {dbTestMessage || "Connected"}
                       </span>
                     )}
                     {dbTestStatus === "error" && dbTestMessage && (
-                      <span className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                      <span className="flex items-center gap-1 text-sm text-destructive">
                         <XCircle className="h-4 w-4" /> {dbTestMessage}
                       </span>
                     )}
