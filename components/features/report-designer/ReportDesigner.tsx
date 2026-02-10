@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -64,6 +64,9 @@ export function ReportDesigner({
     initialTemplate?.name ?? "Untitled Report"
   );
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -119,6 +122,12 @@ export function ReportDesigner({
     if (selectedBlockId === id) setSelectedBlockId(null);
   }, [selectedBlockId]);
 
+  const handleAddBlock = useCallback((blockType: BlockType) => {
+    const newBlock = createBlockFromType(blockType);
+    setBlocks((prev) => [...prev, newBlock]);
+    setSelectedBlockId(newBlock.id);
+  }, []);
+
   const handleSave = useCallback(() => {
     const template: ReportTemplate = {
       id: initialTemplate?.id,
@@ -144,7 +153,7 @@ export function ReportDesigner({
     }
   }, [templateName, blocks, initialTemplate?.id, onSave]);
 
-  const handleExportHtml = useCallback(() => {
+  const handleExportPdf = useCallback(() => {
     const title = templateName;
     const blockToHtml = (b: ReportBlockItem): string => {
       const p = b.props;
@@ -199,11 +208,15 @@ export function ReportDesigner({
 
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${templateName.replace(/\s+/g, "-")}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const w = window.open(url, "_blank", "noopener");
+    if (w) {
+      w.onload = () => {
+        w.print();
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      URL.revokeObjectURL(url);
+    }
   }, [templateName, blocks]);
 
   return (
@@ -227,9 +240,9 @@ export function ReportDesigner({
             <Save className="mr-2 h-4 w-4" />
             Save
           </Button>
-          <Button variant="outline" size="sm" onClick={handleExportHtml}>
+          <Button variant="outline" size="sm" onClick={handleExportPdf}>
             <Download className="mr-2 h-4 w-4" />
-            Export HTML
+            Export as PDF
           </Button>
         </div>
         {saveMessage && (
@@ -237,25 +250,34 @@ export function ReportDesigner({
         )}
       </div>
 
-      {/* Designer area */}
+      {/* Designer area - DndContext only after mount to avoid SSR hydration mismatch (aria-describedby ID) */}
       <div className="flex flex-1 overflow-hidden">
-        <DndContext
-          sensors={sensors}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <BlockPalette />
-          <ReportCanvas
-            blocks={blocks}
-            selectedBlockId={selectedBlockId}
-            onSelectBlock={setSelectedBlockId}
-          />
-          <BlockPropertiesPanel
-            block={blocks.find((b) => b.id === selectedBlockId) ?? null}
-            onUpdate={handleUpdateBlock}
-            onDelete={handleDeleteBlock}
-          />
-        </DndContext>
+        {mounted ? (
+          <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <BlockPalette />
+            <ReportCanvas
+              blocks={blocks}
+              selectedBlockId={selectedBlockId}
+              onSelectBlock={setSelectedBlockId}
+              onAddBlock={handleAddBlock}
+            />
+            <BlockPropertiesPanel
+              block={blocks.find((b) => b.id === selectedBlockId) ?? null}
+              onUpdate={handleUpdateBlock}
+              onDelete={handleDeleteBlock}
+            />
+          </DndContext>
+        ) : (
+          <div className="flex flex-1 animate-pulse items-center justify-center bg-zinc-100/50 dark:bg-zinc-800/30">
+            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+              Loading designer…
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
