@@ -81,7 +81,10 @@ export default function Header() {
           </Badge>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors">
+              <button
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                suppressHydrationWarning
+              >
                 <span className="text-[10px] font-semibold text-muted-foreground">
                   {currentInitials}
                 </span>

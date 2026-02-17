@@ -24,10 +24,82 @@ import type {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Save, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { CanvasSizeKey } from "./types";
+import { CANVAS_SIZE_PORTRAIT_PX } from "./types";
+
+const CANVAS_SIZE_OPTIONS: { value: CanvasSizeKey; label: string }[] = [
+  { value: "A5", label: "A5" },
+  { value: "A4", label: "A4" },
+  { value: "A3", label: "A3" },
+  { value: "Letter", label: "Letter" },
+];
 
 const TEMPLATE_STORAGE_KEY = "ambeon-report-templates";
+
+const ROW_GAP_PX = 12;
+const CANVAS_PADDING_PX = 48; // p-6 top + bottom
+const DEFAULT_BLOCK_HEIGHT_PX = 80;
+
+function parseHeightToPx(height: string | undefined): number {
+  if (!height || typeof height !== "string") return DEFAULT_BLOCK_HEIGHT_PX;
+  const s = height.trim();
+  const pxMatch = s.match(/^(\d+(?:\.\d+)?)\s*px$/);
+  if (pxMatch) return Math.max(20, Number(pxMatch[1]));
+  return DEFAULT_BLOCK_HEIGHT_PX; // auto, %, etc.
+}
+
+function estimateBlockHeightPx(block: ReportBlockItem): number {
+  return parseHeightToPx(block.props.height);
+}
+
+function estimateTotalContentHeight(blocks: ReportBlockItem[]): number {
+  if (blocks.length === 0) return 0;
+  const rows = computeRows(blocks);
+  let total = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const rowHeight = Math.max(
+      ...rows[i].map((b) => estimateBlockHeightPx(b)),
+      DEFAULT_BLOCK_HEIGHT_PX
+    );
+    total += rowHeight;
+    if (i < rows.length - 1) total += ROW_GAP_PX;
+  }
+  return total;
+}
+
+function canAddBlock(
+  currentBlocks: ReportBlockItem[],
+  newBlock: ReportBlockItem,
+  canvasSizeKey: CanvasSizeKey
+): boolean {
+  const { height: maxCanvasHeight } = CANVAS_SIZE_PORTRAIT_PX[canvasSizeKey];
+  const usableHeight = maxCanvasHeight - CANVAS_PADDING_PX;
+  const currentTotal = estimateTotalContentHeight(currentBlocks);
+  const newBlockHeight = estimateBlockHeightPx(newBlock);
+  return currentTotal + ROW_GAP_PX + newBlockHeight <= usableHeight;
+}
+
+/** True if there is room to add at least one more block (using default height). */
+function canAddAnyBlock(
+  currentBlocks: ReportBlockItem[],
+  canvasSizeKey: CanvasSizeKey
+): boolean {
+  const { height: maxCanvasHeight } = CANVAS_SIZE_PORTRAIT_PX[canvasSizeKey];
+  const usableHeight = maxCanvasHeight - CANVAS_PADDING_PX;
+  const currentTotal = estimateTotalContentHeight(currentBlocks);
+  return (
+    currentTotal + ROW_GAP_PX + DEFAULT_BLOCK_HEIGHT_PX <= usableHeight
+  );
+}
 
 function generateBlockId(): string {
   return `block-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -65,6 +137,7 @@ export function ReportDesigner({
   );
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [canvasSize, setCanvasSize] = useState<CanvasSizeKey>("A4");
 
   useEffect(() => setMounted(true), []);
 
@@ -88,6 +161,13 @@ export function ReportDesigner({
     if (fromPalette && data?.blockType) {
       const blockType = data.blockType;
       const newBlock = createBlockFromType(blockType);
+      if (!canAddBlock(blocks, newBlock, canvasSize)) {
+        setSaveMessage(
+          "Canvas is full. Remove items or choose a larger canvas size."
+        );
+        return;
+      }
+      setSaveMessage(null);
       setBlocks((prev) => {
         if (over.id === "report-canvas") {
           return [...prev, newBlock];
@@ -109,7 +189,7 @@ export function ReportDesigner({
         setBlocks((prev) => arrayMove(prev, oldIndex, newIndex));
       }
     }
-  }, [blocks]);
+  }, [blocks, canvasSize]);
 
   const handleUpdateBlock = useCallback((id: string, props: ReportBlockProps) => {
     setBlocks((prev) =>
@@ -122,11 +202,21 @@ export function ReportDesigner({
     if (selectedBlockId === id) setSelectedBlockId(null);
   }, [selectedBlockId]);
 
-  const handleAddBlock = useCallback((blockType: BlockType) => {
-    const newBlock = createBlockFromType(blockType);
-    setBlocks((prev) => [...prev, newBlock]);
-    setSelectedBlockId(newBlock.id);
-  }, []);
+  const handleAddBlock = useCallback(
+    (blockType: BlockType) => {
+      const newBlock = createBlockFromType(blockType);
+      if (!canAddBlock(blocks, newBlock, canvasSize)) {
+        setSaveMessage(
+          "Canvas is full. Remove items or choose a larger canvas size."
+        );
+        return;
+      }
+      setSaveMessage(null);
+      setBlocks((prev) => [...prev, newBlock]);
+      setSelectedBlockId(newBlock.id);
+    },
+    [blocks, canvasSize]
+  );
 
   const handleSave = useCallback(() => {
     const template: ReportTemplate = {
@@ -236,6 +326,24 @@ export function ReportDesigner({
           />
         </div>
         <div className="flex items-center gap-2">
+          <Label className="text-xs text-zinc-500">Canvas size</Label>
+          <Select
+            value={canvasSize}
+            onValueChange={(v) => setCanvasSize(v as CanvasSizeKey)}
+          >
+            <SelectTrigger className="w-[100px]">
+              <SelectValue placeholder="Size" />
+            </SelectTrigger>
+            <SelectContent>
+              {CANVAS_SIZE_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleSave}>
             <Save className="mr-2 h-4 w-4" />
             Save
@@ -264,6 +372,8 @@ export function ReportDesigner({
               selectedBlockId={selectedBlockId}
               onSelectBlock={setSelectedBlockId}
               onAddBlock={handleAddBlock}
+              canvasSize={canvasSize}
+              canAddMore={canAddAnyBlock(blocks, canvasSize)}
             />
             <BlockPropertiesPanel
               block={blocks.find((b) => b.id === selectedBlockId) ?? null}

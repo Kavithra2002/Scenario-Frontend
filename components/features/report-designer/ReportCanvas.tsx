@@ -15,12 +15,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import type { CanvasSizeKey } from "./types";
+import { CANVAS_SIZE_PORTRAIT_PX } from "./types";
 
 interface ReportCanvasProps {
   blocks: ReportBlockItem[];
   selectedBlockId: string | null;
   onSelectBlock: (id: string | null) => void;
   onAddBlock?: (blockType: BlockType) => void;
+  canvasSize?: CanvasSizeKey;
+  /** When false, adding blocks is blocked (canvas full). */
+  canAddMore?: boolean;
 }
 
 export function ReportCanvas({
@@ -28,6 +33,8 @@ export function ReportCanvas({
   selectedBlockId,
   onSelectBlock,
   onAddBlock,
+  canvasSize = "A4",
+  canAddMore = true,
 }: ReportCanvasProps) {
   const [addOpen, setAddOpen] = useState(false);
   const { setNodeRef, isOver } = useDroppable({
@@ -35,6 +42,8 @@ export function ReportCanvas({
   });
 
   const rows = computeRows(blocks);
+  const { width: canvasWidthPx, height: canvasHeightPx } =
+    CANVAS_SIZE_PORTRAIT_PX[canvasSize];
 
   const handleSelectBlockType = (blockType: BlockType) => {
     onAddBlock?.(blockType);
@@ -43,7 +52,10 @@ export function ReportCanvas({
 
   return (
     <div className="relative flex flex-1 flex-col overflow-auto bg-zinc-100/50 dark:bg-zinc-900/30">
-      <div className="mx-auto w-full max-w-2xl flex-1 p-6 pb-14">
+      <div
+        className="mx-auto w-full flex-1 p-6 pb-14"
+        style={{ maxWidth: canvasWidthPx ? `${canvasWidthPx}px` : undefined }}
+      >
         <div
           ref={setNodeRef}
           onClick={(e) => {
@@ -51,17 +63,20 @@ export function ReportCanvas({
             onSelectBlock(null);
           }}
           className={cn(
-            "min-h-[420px] rounded-xl border-2 border-dashed p-6 transition",
+            "min-w-0 overflow-hidden rounded-xl border-2 border-dashed p-6 transition",
             isOver
               ? "border-blue-400 bg-blue-50/50 dark:border-blue-500 dark:bg-blue-950/30"
               : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900/50"
           )}
+          style={{
+            minHeight: canvasHeightPx ? `${canvasHeightPx}px` : undefined,
+          }}
         >
           <SortableContext
             items={blocks.map((b) => b.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="flex flex-col gap-3">
+            <div className="flex min-w-0 flex-col gap-3 overflow-hidden">
               {blocks.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-16 text-center text-zinc-500 dark:text-zinc-400">
                   <p className="text-sm font-medium">Drop blocks here</p>
@@ -73,13 +88,13 @@ export function ReportCanvas({
               {rows.map((row, rowIndex) => (
                 <div
                   key={row.map((b) => b.id).join("-")}
-                  className="flex w-full flex-row items-stretch gap-2"
+                  className="flex min-w-0 w-full flex-row items-stretch gap-2 overflow-hidden"
                 >
                   {row.map((block) => (
                     <div
                       key={block.id}
                       data-sortable
-                      className="min-w-0 flex-shrink-0"
+                      className="min-w-0 max-w-full flex-shrink-0 overflow-hidden"
                       style={{
                         // When block is alone in row, wrapper is full width so block's width % is relative to full row
                         width: row.length === 1 ? "100%" : (block.props.width ?? "100%"),
@@ -108,8 +123,10 @@ export function ReportCanvas({
               <Button
                 size="icon"
                 variant="outline"
-                className="h-10 w-10 rounded-full border-2 border-dashed border-zinc-300 bg-white shadow-md hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:hover:border-zinc-500 dark:hover:bg-zinc-700"
-                aria-label="Add block"
+                disabled={!canAddMore}
+                title={canAddMore ? "Add block" : "Canvas is full"}
+                className="h-10 w-10 rounded-full border-2 border-dashed border-zinc-300 bg-white shadow-md hover:border-zinc-400 hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-600 dark:bg-zinc-800 dark:hover:border-zinc-500 dark:hover:bg-zinc-700"
+                aria-label={canAddMore ? "Add block" : "Canvas is full"}
               >
                 <Plus className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
               </Button>

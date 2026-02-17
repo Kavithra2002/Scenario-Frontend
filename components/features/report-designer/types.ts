@@ -90,6 +90,28 @@ export interface ReportTemplate {
   updatedAt?: string;
 }
 
+/** Canvas / paper size preset – portrait (vertical) dimensions at ~96dpi */
+export type CanvasSizeKey = "A5" | "A4" | "A3" | "Letter";
+
+/** Portrait: width and height in px (mm * 96/25.4) so canvas is vertical */
+export const CANVAS_SIZE_PORTRAIT_PX: Record<
+  CanvasSizeKey,
+  { width: number; height: number }
+> = {
+  A5: { width: 559, height: 794 },   // 148×210 mm
+  A4: { width: 794, height: 1123 },  // 210×297 mm
+  A3: { width: 1123, height: 1587 }, // 297×420 mm
+  Letter: { width: 816, height: 1056 }, // 216×279 mm
+};
+
+/** Max width in px (kept for compatibility) */
+export const CANVAS_SIZE_PX: Record<CanvasSizeKey, number> = {
+  A5: 559,
+  A4: 794,
+  A3: 1123,
+  Letter: 816,
+};
+
 /** Drag payload when dragging from palette (new block type) */
 export interface PaletteDragItem {
   type: "palette";

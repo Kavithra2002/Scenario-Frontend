@@ -4,6 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import type { ReportBlockItem, ReportBlockProps } from "./types";
+import { getWidthPercent } from "./rowLayout";
 import { cn } from "@/lib/utils";
 
 interface ReportBlockComponentProps {
@@ -106,7 +107,12 @@ export function ReportBlock({
   if (isAloneInRow) {
     if (width) sizeStyle.width = width;
     if (positionX != null && positionX >= 0 && positionX <= 100) {
-      sizeStyle.marginLeft = `${positionX}%`;
+      // Prevent the block from exceeding the canvas: clamp position so
+      // left edge + width % never goes past 100% of the row.
+      const widthPercent = getWidthPercent(block);
+      const maxPosition = Math.max(0, 100 - widthPercent);
+      const safePosition = Math.min(Math.max(positionX, 0), maxPosition);
+      sizeStyle.marginLeft = `${safePosition}%`;
       sizeStyle.marginRight = "0";
     } else if (align === "center") {
       sizeStyle.marginLeft = "auto";
